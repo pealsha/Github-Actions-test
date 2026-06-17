@@ -16,5 +16,14 @@ jobs:
       - name: 現在時刻を表示
         run: date
 
-      - name: ファイル一覧を表示
-        run: ls -la
+      - name: Python環境をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Pythonバージョン確認
+        run: python --version
+
+      - name: Pythonスクリプトを実行
+        run: python scripts/hello.py
+        
