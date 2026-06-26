@@ -1,3 +1,8 @@
+---
+output_file: output/fizzbuzz.py
+test_command: pytest tests/test_fizzbuzz.py -v
+---
+
 # タスク: FizzBuzz実装
 
 ## 要件
@@ -8,7 +13,6 @@
 - それ以外のとき: nを文字列に変換して返す
 
 ## 出力形式
-- ファイル名: output/fizzbuzz.py
 - 関数名: fizzbuzz
 - 余計なmain処理やprint文は含めないこと
 - コードのみを返すこと(説明文・マークダウン記法不要)
