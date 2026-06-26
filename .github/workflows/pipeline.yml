@@ -1,0 +1,50 @@
+name: AI Code Generation Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec_file:
+        description: '要件定義ファイルのパス'
+        required: true
+        default: 'specs/task1.md'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v6
+
+      - name: Python環境をセットアップ
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージをインストール
+        run: pip install openai pytest
+
+      - name: コード生成
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python scripts/generate_code.py ${{ github.event.inputs.spec_file }}
+
+      - name: テスト & 自動修正ループ
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python scripts/fix_loop.py
+
+      - name: Pull Requestを作成
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: "AI生成: ${{ github.event.inputs.spec_file }}"
+          branch: ai-task-${{ github.run_id }}
+          commit-message: "AI generated implementation"
+          body: |
+            DeepSeekによる自動生成コードです。
+            要件定義: ${{ github.event.inputs.spec_file }}
+            レビューをお願いします。
+          add-paths: output/
