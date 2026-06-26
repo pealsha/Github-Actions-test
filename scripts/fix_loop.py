@@ -3,13 +3,13 @@ import os
 import subprocess
 import sys
 from openai import OpenAI
+from spec_parser import parse_spec
 
 MAX_RETRIES = 3
 
-def run_tests() -> tuple[bool, str]:
-    """テストを実行し、成否とログを返す"""
+def run_tests(test_command: str) -> tuple[bool, str]:
     result = subprocess.run(
-        ["python", "-m", "pytest", "tests/", "-v"],
+        test_command.split(),
         capture_output=True,
         text=True
     )
@@ -17,7 +17,6 @@ def run_tests() -> tuple[bool, str]:
     return result.returncode == 0, output
 
 def fix_code(current_code: str, error_log: str) -> str:
-    """エラーログをDeepSeekに渡して修正コードを生成する"""
     client = OpenAI(
         api_key=os.environ["DEEPSEEK_API_KEY"],
         base_url="https://api.deepseek.com"
@@ -42,11 +41,14 @@ def fix_code(current_code: str, error_log: str) -> str:
     return response.choices[0].message.content.strip()
 
 def main():
-    output_file = "output/fizzbuzz.py"
+    spec_file = sys.argv[1]
+    spec = parse_spec(spec_file)
+    output_file = spec["output_file"]
+    test_command = spec["test_command"]
 
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"\n--- テスト実行 (試行 {attempt}/{MAX_RETRIES}) ---")
-        success, log = run_tests()
+        success, log = run_tests(test_command)
 
         if success:
             print("✅ テスト成功")
