@@ -26,4 +26,11 @@ jobs:
 
       - name: Pythonスクリプトを実行
         run: python scripts/hello.py
-        
+
+      - name: 依存パッケージをインストール
+        run: pip install openai
+
+      - name: DeepSeek APIテスト
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python scripts/deepseek_test.py
