@@ -2,8 +2,9 @@
 import os
 import sys
 from openai import OpenAI
+from spec_parser import parse_spec
 
-def generate_code(spec_text: str) -> str:
+def generate_code(spec_body: str) -> str:
     client = OpenAI(
         api_key=os.environ["DEEPSEEK_API_KEY"],
         base_url="https://api.deepseek.com"
@@ -18,7 +19,7 @@ def generate_code(spec_text: str) -> str:
             },
             {
                 "role": "user",
-                "content": spec_text
+                "content": spec_body
             }
         ],
         max_tokens=1000,
@@ -29,18 +30,21 @@ def generate_code(spec_text: str) -> str:
 
 if __name__ == "__main__":
     spec_file = sys.argv[1]
-
-    with open(spec_file, "r", encoding="utf-8") as f:
-        spec = f.read()
+    spec = parse_spec(spec_file)
 
     print(f"要件定義を読み込みました: {spec_file}")
-    code = generate_code(spec)
-    print("コード生成完了")
+    print(f"出力先: {spec['output_file']}")
 
-    os.makedirs("output", exist_ok=True)
-    with open("output/fizzbuzz.py", "w", encoding="utf-8") as f:
+    code = generate_code(spec["body"])
+
+    # 出力先ディレクトリを動的に作成
+    output_dir = os.path.dirname(spec["output_file"])
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
+    with open(spec["output_file"], "w", encoding="utf-8") as f:
         f.write(code)
 
-    print("output/fizzbuzz.py に保存しました")
+    print(f"コード生成完了: {spec['output_file']}")
     print("--- 生成されたコード ---")
     print(code)
